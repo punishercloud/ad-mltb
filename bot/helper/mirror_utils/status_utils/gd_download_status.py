@@ -25,6 +25,9 @@ class GdDownloadStatus:
     def status(self):
         return MirrorStatus.STATUS_DOWNLOADING
 
+    def eng(self):
+        return EngineStatus.STATUS_GDRIVE
+
     def name(self):
         return self.__obj.name
 

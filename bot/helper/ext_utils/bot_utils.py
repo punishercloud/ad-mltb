@@ -32,6 +32,19 @@ class MirrorStatus:
     STATUS_SPLITTING = "Splitting...✂️"
     STATUS_CHECKING = "CheckingUp...📝"
     STATUS_SEEDING = "Seeding...🌧"
+    
+
+class EngineStatus:
+    STATUS_ARIA = "Aria2c"
+    STATUS_GDRIVE = "Google API"
+    STATUS_MEGA = "Mega API"
+    STATUS_QB = "qBittorrent"
+    STATUS_TG = "Pyrogram"
+    STATUS_YT = "Yt-dlp"
+    STATUS_EXT = "extract | pextract"
+    STATUS_SPLIT = "FFmpeg"
+    STATUS_ZIP = "7z"
+
 
 SIZE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
@@ -138,6 +151,7 @@ def get_readable_message():
                 else:
                     msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 msg += f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
+                msg += f"\n<b>Engine:</b> {download.eng()}"
                 try:
                     msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
                            f" | <b>Peers:</b> {download.aria_download().connections}"
@@ -158,6 +172,7 @@ def get_readable_message():
                 msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             else:
                 msg += f"\n<b>Size: </b>{download.size()}"
+                msg += f"\n<b>Engine:</b> {download.eng()}"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
