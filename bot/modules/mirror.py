@@ -13,7 +13,7 @@ from telegram import InlineKeyboardMarkup
 
 from bot import Interval, INDEX_URL, VIEW_LINK, aria2, QB_SEED, dispatcher, DOWNLOAD_DIR, \
                 download_dict, download_dict_lock, TG_SPLIT_SIZE, LOGGER, MEGA_KEY, DB_URI, INCOMPLETE_TASK_NOTIFIER
-from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_gdtot_link, is_mega_link, is_gdrive_link, get_content_type
+from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_gdtot_link, is_mega_link, is_gdrive_link, get_content_type, get_readable_time
 from bot.helper.ext_utils.fs_utils import get_base_name, get_path_size, split_file, clean_download
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupportedExtractionArchive
 from bot.helper.mirror_utils.download_utils.aria2_download import add_aria2c_download
@@ -41,6 +41,7 @@ class MirrorListener:
         self.bot = bot
         self.message = message
         self.uid = self.message.message_id
+        self.elapsed_time = time()
         self.extract = extract
         self.isZip = isZip
         self.isQbit = isQbit
@@ -198,6 +199,7 @@ class MirrorListener:
             msg += f'\n<b>Total Files: </b>{folders}'
             if typ != 0:
                 msg += f'\n<b>Corrupted Files: </b>{typ}'
+            msg += f"\n\n<b>Elapsed Time:</b> {get_readable_time(time() - self.elapsed_time)}"
             msg += f'\n<b>cc: </b>{self.tag}\n\n'
             if not files:
                 sendMessage(msg, self.bot, self.message)
@@ -216,6 +218,7 @@ class MirrorListener:
             if ospath.isdir(f'{DOWNLOAD_DIR}{self.uid}/{name}'):
                 msg += f'\n<b>SubFolders: </b>{folders}'
                 msg += f'\n<b>Files: </b>{files}'
+            msg += f"\n\n<b>Elapsed Time:</b> {get_readable_time(time() - self.elapsed_time)}"
             msg += f'\n\n<b>cc: </b>{self.tag}'
             buttons = ButtonMaker()
             buttons.buildbutton("☁️ Drive Link", link)

@@ -151,7 +151,7 @@ def get_readable_message():
                 else:
                     msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 msg += f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
-                msg += f"\n<b>Engine:</b> {download.eng()}"
+                msg += f"\n<b>Engine:</b> {download.eng()} | <b>Elapsed:</b> {get_readable_time(time() - (download.message.date.timestamp())}"
                 try:
                     msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
                            f" | <b>Peers:</b> {download.aria_download().connections}"
@@ -173,6 +173,7 @@ def get_readable_message():
             else:
                 msg += f"\n<b>Size: </b>{download.size()}"
                 msg += f"\n<b>Engine:</b> {download.eng()}"
+                msg += f"\n<b>Elapsed:</b> {get_readable_time(time() - int(download.message.date.timestamp()))}"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break

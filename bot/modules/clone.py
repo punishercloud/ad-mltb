@@ -2,7 +2,7 @@ from random import SystemRandom
 from string import ascii_letters, digits
 from telegram.ext import CommandHandler
 from threading import Thread
-from time import sleep
+from time import time, sleep
 
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import sendMessage, sendMarkup, deleteMessage, delete_all_messages, update_all_messages, sendStatusMessage
@@ -10,12 +10,13 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.mirror_utils.status_utils.clone_status import CloneStatus
 from bot import dispatcher, LOGGER, STOP_DUPLICATE, download_dict, download_dict_lock, Interval
-from bot.helper.ext_utils.bot_utils import is_gdrive_link, is_gdtot_link, new_thread
+from bot.helper.ext_utils.bot_utils import get_readable_time, is_gdrive_link, is_gdtot_link, new_thread
 from bot.helper.mirror_utils.download_utils.direct_link_generator import gdtot
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 
 
 def _clone(message, bot, multi=0):
+    elapsed_time = time()
     args = message.text.split(maxsplit=1)
     reply_to = message.reply_to_message
     link = ''
@@ -87,7 +88,8 @@ def _clone(message, bot, multi=0):
                     update_all_messages()
             except IndexError:
                 pass
-        cc = f'\n\n<b>cc: </b>{tag}'
+        cc = f"\n\n<b>Elapsed Time:</b> {get_readable_time(time() - elapsed_time)}"
+        cc += f'\n\n<b>cc: </b>{tag}'
         if button in ["cancelled", ""]:
             sendMessage(f"{tag} {result}", bot, message)
         else:

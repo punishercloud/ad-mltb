@@ -1,3 +1,5 @@
+from time import time
+
 from telegram.ext import CommandHandler
 
 from bot import dispatcher
@@ -5,10 +7,11 @@ from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import deleteMessage, sendMessage
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.ext_utils.bot_utils import is_gdrive_link, new_thread
+from bot.helper.ext_utils.bot_utils import get_readable_time, is_gdrive_link, new_thread
 
 @new_thread
 def countNode(update, context):
+    elapsed_time = time()
     reply_to = update.message.reply_to_message
     link = ''
     if len(context.args) == 1:
@@ -29,7 +32,8 @@ def countNode(update, context):
         gd = GoogleDriveHelper()
         result = gd.count(link)
         deleteMessage(context.bot, msg)
-        cc = f'\n\n<b>cc: </b>{tag}'
+        cc = f"\n\n<b>Elapsed Time:</b> {get_readable_time(time() - elapsed_time)}"
+        cc += f'\n\n<b>cc: </b>{tag}'
         sendMessage(result + cc, context.bot, update.message)
     else:
         sendMessage('Send Gdrive link along with command or by replying to the link by command', context.bot, update.message)
