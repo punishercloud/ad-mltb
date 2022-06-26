@@ -1,11 +1,13 @@
 from time import sleep
+
 from telegram import InlineKeyboardMarkup
+from telegram.ext import CallbackQueryHandler
 from telegram.message import Message
 from telegram.error import RetryAfter
 from pyrogram.errors import FloodWait
 
-from bot import AUTO_DELETE_MESSAGE_DURATION, LOGGER, status_reply_dict, status_reply_dict_lock, \
-                Interval, DOWNLOAD_STATUS_UPDATE_INTERVAL, RSS_CHAT_ID, bot, rss_session
+from bot import dispatcher, AUTO_DELETE_MESSAGE_DURATION, LOGGER, status_reply_dict, status_reply_dict_lock, \
+                Interval, DOWNLOAD_STATUS_UPDATE_INTERVAL, RSS_CHAT_ID, bot, rss_session, botStartTime
 from bot.helper.ext_utils.bot_utils import get_readable_message, setInterval
 
 
@@ -123,10 +125,7 @@ def update_all_messages():
     with status_reply_dict_lock:
         for chat_id in list(status_reply_dict.keys()):
             if status_reply_dict[chat_id] and msg != status_reply_dict[chat_id].text:
-                if buttons == "":
-                    editMessage(msg, status_reply_dict[chat_id])
-                else:
-                    editMessage(msg, status_reply_dict[chat_id], buttons)
+                editMessage(msg, status_reply_dict[chat_id], buttons)
                 status_reply_dict[chat_id].text = msg
 
 def sendStatusMessage(msg, bot):
@@ -142,8 +141,5 @@ def sendStatusMessage(msg, bot):
             except Exception as e:
                 LOGGER.error(str(e))
                 del status_reply_dict[msg.chat.id]
-        if buttons == "":
-            message = sendMessage(progress, bot, msg)
-        else:
-            message = sendMarkup(progress, bot, msg, buttons)
+        message = sendMarkup(progress, bot, msg, buttons)
         status_reply_dict[msg.chat.id] = message

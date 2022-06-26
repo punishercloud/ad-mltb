@@ -3,7 +3,7 @@ from threading import Thread, Event
 from time import time
 from math import ceil
 from html import escape
-from psutil import virtual_memory, cpu_percent, disk_usage
+from psutil import disk_usage, virtual_memory, cpu_percent, net_io_counters
 from requests import head as rhead
 from urllib.request import urlopen
 from telegram import InlineKeyboardMarkup
@@ -119,10 +119,27 @@ def get_progress_bar_string(status):
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
     cFull = p // 8
-    p_str = '■' * cFull
-    p_str += '□' * (12 - cFull)
+    p_str = '▓' * cFull
+    p_str += '░' * (12 - cFull)
     p_str = f"[{p_str}]"
     return p_str
+
+def progress_bar(percentage):
+    comp = '▓'
+    ncomp = '░'
+    pr = ''
+    if isinstance(percentage, str):
+        return 'NaN'
+    try:
+        percentage=int(percentage)
+    except:
+        percentage = 0
+    for i in range(1,11):
+        if i <= int(percentage/10):
+            pr += comp
+        else:
+            pr += ncomp
+    return pr
 
 def get_readable_message():
     with download_dict_lock:
@@ -177,8 +194,7 @@ def get_readable_message():
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
-        bmsg = f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
-        bmsg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - botStartTime)}"
+        bmsg = f"<b>BOT UPTIME:</b> {get_readable_time(time() - botStartTime)}"
         dlspeed_bytes = 0
         upspeed_bytes = 0
         for download in list(download_dict.values()):
@@ -193,15 +209,23 @@ def get_readable_message():
                     upspeed_bytes += float(spd.split('K')[0]) * 1024
                 elif 'MB/s' in spd:
                     upspeed_bytes += float(spd.split('M')[0]) * 1048576
-        bmsg += f"\n<b>DL:</b> {get_readable_file_size(dlspeed_bytes)}/s | <b>UL:</b> {get_readable_file_size(upspeed_bytes)}/s"
+        bmsg += f"\n<b>DL:</b> {get_readable_file_size(dlspeed_bytes)}/s ▼ | <b>UL:</b> {get_readable_file_size(upspeed_bytes)}/s ▲"
+        buttons = ButtonMaker()
+        buttons.sbutton("Refresh", "status refresh")
+        buttons.sbutton("Stats", "status stats")
+        buttons.sbutton("Close", "status close")
+        button = InlineKeyboardMarkup(buttons.build_menu(3))
         if STATUS_LIMIT is not None and tasks > STATUS_LIMIT:
             msg += f"<b>Page:</b> {PAGE_NO}/{pages} | <b>Tasks:</b> {tasks}\n"
             buttons = ButtonMaker()
+            buttons.sbutton("Refresh", "status refresh")
+            buttons.sbutton("Stats", "status stats")
+            buttons.sbutton("Close", "status close")
             buttons.sbutton("Previous", "status pre")
             buttons.sbutton("Next", "status nex")
-            button = InlineKeyboardMarkup(buttons.build_menu(2))
+            button = InlineKeyboardMarkup(buttons.build_menu(3))
             return msg + bmsg, button
-        return msg + bmsg, ""
+        return msg + bmsg, button
 
 def turn(data):
     try:
@@ -224,6 +248,33 @@ def turn(data):
         return True
     except:
         return False
+
+def pop_up_stats():
+    currentTime = get_readable_time(time() - botStartTime)
+    total, used, free, disk = disk_usage('/')
+    disk_t = get_readable_file_size(total)
+    disk_f = get_readable_file_size(free)
+    memory = virtual_memory()
+    mem_p = memory.percent
+    mem_t = get_readable_file_size(memory.total)
+    mem_a = get_readable_file_size(memory.available)
+    sent = get_readable_file_size(net_io_counters().bytes_sent)
+    recv = get_readable_file_size(net_io_counters().bytes_recv)
+    cpuUsage = cpu_percent(interval=0.5)
+    stats = f"""
+BY: @AHADx1337
+
+CPU : [{progress_bar(cpuUsage)}] {cpuUsage}%
+
+RAM: [{progress_bar(mem_p)}] {mem_p}%
+Free: {mem_a} | Total: {mem_t}
+
+DISK: [{progress_bar(disk)}] {disk}%
+Free: {disk_f} | Total: {disk_t}
+
+Download: {recv} | Upload: {sent}
+"""
+    return stats
 
 def get_readable_time(seconds: int) -> str:
     result = ''
