@@ -29,7 +29,7 @@ def mirror_status(update, context):
     sendStatusMessage(update.message, context.bot)
     deleteMessage(context.bot, update.message)
 
-def status_buttton(update, context):
+def status_button(update, context):
     query = update.callback_query
     msg = query.message
     user_id = query.from_user.id
@@ -64,6 +64,6 @@ def status_buttton(update, context):
 mirror_status_handler = CommandHandler(BotCommands.StatusCommand, mirror_status,
                                        filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 
-status_button_handler = CallbackQueryHandler(status_buttton, pattern="status", run_async=True)
+status_button_handler = CallbackQueryHandler(status_button, pattern="status", run_async=True)
 dispatcher.add_handler(mirror_status_handler)
 dispatcher.add_handler(status_button_handler)
